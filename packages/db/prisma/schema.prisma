@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  nombre    String
+  rol       RolUsuario @default(RECEPCIONISTA)
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+enum RolUsuario {
+  ADMIN
+  MEDICO
+  RECEPCIONISTA
+}
+
+model Medico {
+  id           Int              @id @default(autoincrement())
+  nombre       String
+  apellido     String
+  especialidad String
+  email        String           @unique
+  telefono     String?
+  activo       Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+
+  citas        Cita[]
+  historiales  HistorialMedico[]
+}
+
+model Paciente {
+  id              Int              @id @default(autoincrement())
+  nombre          String
+  apellido        String
+  fechaNacimiento DateTime
+  genero          String?
+  email           String?          @unique
+  telefono        String?
+  direccion       String?
+  tipoSangre      String?
+  createdAt       DateTime         @default(now())
+
+  citas           Cita[]
+  historiales     HistorialMedico[]
+}
+
+model Cita {
+  id         Int          @id @default(autoincrement())
+  pacienteId Int
+  medicoId   Int
+  fechaHora  DateTime
+  motivo     String?
+  estado     EstadoCita   @default(PROGRAMADA)
+  notas      String?
+  createdAt  DateTime     @default(now())
+
+  paciente   Paciente        @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+  medico     Medico          @relation(fields: [medicoId], references: [id], onDelete: Cascade)
+  historial  HistorialMedico?
+}
+
+model HistorialMedico {
+  id           Int      @id @default(autoincrement())
+  pacienteId   Int
+  citaId       Int?     @unique
+  medicoId     Int
+  diagnostico  String
+  tratamiento  String?
+  medicamentos String?
+  fecha        DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  paciente     Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+  cita         Cita?    @relation(fields: [citaId], references: [id], onDelete: SetNull)
+  medico       Medico   @relation(fields: [medicoId], references: [id])
+}
+
+enum EstadoCita {
+  PROGRAMADA
+  EN_CURSO
+  COMPLETADA
+  CANCELADA
+}
