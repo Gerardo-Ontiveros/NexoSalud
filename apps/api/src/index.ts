@@ -24,7 +24,6 @@ const start = async () => {
     app.get("/health", async () => ({ status: "ok", timestamp: new Date() }));
 
     await app.listen({ port: 3001, host: "0.0.0.0" });
-    console.log("Servidor corriendo en el puerto 3001");
   } catch (err) {
     app.log.error(err);
     process.exit(1);
